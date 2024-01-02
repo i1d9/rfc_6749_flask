@@ -8,6 +8,6 @@ class RegistrationForm(FlaskForm):
 	last_name = StringField("Last Name", validators=[DataRequired()])
 	email_address = StringField("Email Address", validators=[DataRequired(), Email()])
 	password = PasswordField("Password", validators=[DataRequired()])
-	submit = SubmitField("Submit")
+	# submit = SubmitField("Submit")
 
 

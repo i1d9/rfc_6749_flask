@@ -39,7 +39,8 @@ def profile_post():
 
 @app.get("/register")
 def register_get():
-    return render_template('auth/register.html')
+    registration_form = registration.RegistrationForm() 
+    return render_template('auth/register.html', form=registration_form)
 
 
 @app.post("/register")
