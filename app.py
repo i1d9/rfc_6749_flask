@@ -49,8 +49,7 @@ def register_post():
 
 @app.get("/login")
 def login_get():
-
-    login_form = login.LoginForm()
+    login_form = login.LoginForm() 
     return render_template('auth/login.html', form=login_form)
 
 
