@@ -1,0 +1,7 @@
+{% extends "layout.html" %} {% block content %}
+<ul>
+  <li><a href="{{ url_for('profile_get') }}">Profile</a></li>
+  <li><a href="{{ url_for('register_get') }}">Register</a></li>
+  <li><a href="{{ url_for('login_get') }}">Login</a></li>
+</ul>
+{% endblock %}
