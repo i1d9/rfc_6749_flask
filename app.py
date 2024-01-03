@@ -1,12 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from markupsafe import escape
 from flask_wtf import CSRFProtect
 
 from forms import login, registration
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, logout_user, login_required
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from urllib.parse import urlencode
 
+from datetime import datetime, timedelta
 import datetime
 import os
 import secrets
@@ -90,10 +91,13 @@ class OauthClient(db.Model):
 
 # TODO Arrange the app
 class OauthCode(db.Model):
+
     __tablename__ = 'oauth_codes'
+
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(80), nullable=False)
     code = db.Column(db.String(255), nullable=False)
+    client_code = db.Column(db.String(255), unique=True, nullable=True)
     client_id = db.Column(db.Integer, db.ForeignKey('oauth_clients.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     expiry_time = db.Column(db.DateTime(timezone=True),
@@ -168,27 +172,39 @@ def authorization():
             client_id=client_id, endpoint=redirect_uri)
 
         if client:
-            # When a client is found
+            # When a client is found, the request method is POST and the resource owner has accepted the request
             if request.method == "POST" and request.form["accept"] == "1":
 
-                parameters = dict(code="message")
+                current_time = datetime.now()
+                minutes_later = timedelta(minutes=5)
+                code = secrets.token_urlsafe(24)
+                oauth_code = OauthCode(
+                    client_code=code_challenge,
+                    client_id=client.id, user_id=current_user.id, expiry_time=current_time + minutes_later, code=code)
+
+                db.session.add(oauth_code)
+                db.session.commit()
+                
+                parameters = dict(code=oauth_code.code)
                 redirect_url = redirect_uri + \
                     ("?" + urlencode(parameters) if parameters else "")
-                
+
                 return redirect(redirect_url)
-            
+            # When a client is found, the request method is POST and the resource owner has revoked the request
             elif request.method == "POST" and request.form["accept"] == "0":
 
-                parameters = dict(error="access_denied", error_description="resource owner revoked request")
+                parameters = dict(
+                    error="access_denied", error_description="resource owner revoked request")
                 redirect_url = redirect_uri + \
                     ("?" + urlencode(parameters) if parameters else "")
-                
+
                 return redirect(redirect_url)
-            
+            # When a client is found, the request method is GET
+            # This should be the default block that runs then the client is found
             else:
                 return render_template('auth/consent.html', client=client)
         else:
-            # When the provided params are not associated with a client
+            # When the provided params(redirect_uri and client_id) are not associated with a client
             parameters = dict(error="unauthorized_client",
                               error_description="invalid client id and redirect uri")
             redirect_url = redirect_uri + \
@@ -203,13 +219,64 @@ def authorization():
 
         return redirect(redirect_url)
 
-    # Ultimatley redirect to the home page
+    # Ultimately redirect to the home page
     return redirect(url_for('index'))
 
 
 @app.post("/oauth/token")
 def access_token_endpoint():
-    return "OK"
+    args = request.args
+    grant_type = args.get('grant_type')
+    code = args.get('code')
+    redirect_uri = args.get('redirect_uri')
+    client_id = args.get('client_id')
+    code_verifier = args.get('code_verifier')
+
+    if None not in (client_id, redirect_uri, grant_type, code, code_verifier):
+        # Try resolving the client from the database
+        client = OauthClient.query.filter_by(
+            client_id=client_id, endpoint=redirect_uri)
+        data = ""
+        if client:
+            match grant_type:
+                case "authorization_code":
+                    if None in (code_verifier, code):
+                        data = {
+                            "access_token": "2YotnFZFEjr1zCsicMWpAA",
+                            "token_type": "Bearer",
+                            "expires_in": 3600,
+                        }
+                    else:
+                        data = {"error": "invalid_request",
+                                "error_description": "invalid parameters provided",
+                                }
+
+                case "password":
+                    data = {
+                        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+                        "token_type": "Bearer",
+                        "expires_in": 3600,
+                    }
+                case "client_credentials":
+                    data = {
+                        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+                        "token_type": "Bearer",
+                        "expires_in": 3600,
+                    }
+                case _:
+                    data = {
+                        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+                        "token_type": "Bearer",
+                        "expires_in": 3600,
+                    }
+
+        return jsonify(data)
+
+    data = {"error": "invalid_request",
+            "error_description": "invalid parameters provided",
+            }
+
+    return jsonify(data, code=400)
 
 
 @app.route("/register", methods=["GET", "POST"])
