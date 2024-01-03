@@ -12,15 +12,10 @@
             alt=""
           />
         </div>
-        <h1 class="text-gray-900 font-bold text-xl leading-8 my-1">Jane Doe</h1>
-        <h3 class="text-gray-600 font-lg text-semibold leading-6">
-          Owner at Her Company Inc.
-        </h3>
-        <p class="text-sm text-gray-500 hover:text-gray-600 leading-6">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          Reprehenderit, eligendi dolorum sequi illum qui unde aspernatur non
-          deserunt
-        </p>
+        <h1 class="text-gray-900 font-bold text-xl leading-8 my-1">
+          {{ current_user.first_name }} {{ current_user.last_name }}
+        </h1>
+
         <ul
           class="bg-gray-100 text-gray-600 hover:text-gray-700 hover:shadow py-2 px-3 mt-3 divide-y rounded shadow-sm"
         >
@@ -32,15 +27,11 @@
               ></span
             >
           </li>
-          <li class="flex items-center py-3">
-            <span>Member since</span>
-            <span class="ml-auto">Nov 07, 2016</span>
-          </li>
         </ul>
       </div>
       <!-- End of profile card -->
       <div class="my-4"></div>
-      
+
       <!-- End of friends card -->
     </div>
     <!-- Right Side -->
@@ -73,50 +64,29 @@
           <div class="grid md:grid-cols-2 text-sm">
             <div class="grid grid-cols-2">
               <div class="px-4 py-2 font-semibold">First Name</div>
-              <div class="px-4 py-2">Jane</div>
+              <div class="px-4 py-2">{{ current_user.first_name }}</div>
             </div>
             <div class="grid grid-cols-2">
               <div class="px-4 py-2 font-semibold">Last Name</div>
-              <div class="px-4 py-2">Doe</div>
+              <div class="px-4 py-2">{{ current_user.last_name }}</div>
             </div>
-            <div class="grid grid-cols-2">
-              <div class="px-4 py-2 font-semibold">Gender</div>
-              <div class="px-4 py-2">Female</div>
-            </div>
-            <div class="grid grid-cols-2">
-              <div class="px-4 py-2 font-semibold">Contact No.</div>
-              <div class="px-4 py-2">+11 998001001</div>
-            </div>
-            <div class="grid grid-cols-2">
-              <div class="px-4 py-2 font-semibold">Current Address</div>
-              <div class="px-4 py-2">Beech Creek, PA, Pennsylvania</div>
-            </div>
-            <div class="grid grid-cols-2">
-              <div class="px-4 py-2 font-semibold">Permanant Address</div>
-              <div class="px-4 py-2">Arlington Heights, IL, Illinois</div>
-            </div>
+
             <div class="grid grid-cols-2">
               <div class="px-4 py-2 font-semibold">Email.</div>
               <div class="px-4 py-2">
-                <a class="text-blue-800" href="mailto:jane@example.com"
-                  >jane@example.com</a
+                <a
+                  class="text-blue-800"
+                  href="mailto:{{current_user.email_address}}"
                 >
+                  {{ current_user.email_address }}
+                </a>
               </div>
-            </div>
-            <div class="grid grid-cols-2">
-              <div class="px-4 py-2 font-semibold">Birthday</div>
-              <div class="px-4 py-2">Feb 06, 1998</div>
             </div>
           </div>
         </div>
-       
       </div>
       <!-- End of about section -->
 
-      <div class="my-4"></div>
-
-      
-	  
       <!-- End of profile tab -->
     </div>
   </div>
