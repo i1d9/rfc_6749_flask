@@ -150,7 +150,7 @@ def verify_access_token(f):
         token = None
         if "Authorization" in request.headers:
             token = request.headers["Authorization"].split(" ")[1]
-         
+
         if not token:
             return {
                 "error_description": "Access denied",
@@ -159,6 +159,7 @@ def verify_access_token(f):
             }, 401
         try:
             data = jwt.decode(token, 'secret', algorithms=['HS512'])
+
             current_user = User.query.get(data["user_id"])
             if current_user is None:
                 return {
@@ -187,10 +188,11 @@ def hello(name):
 
 @app.route("/user/info")
 @verify_access_token
-def user_info():
+def user_info(current_user):
     return jsonify({
-        "first_name": "Hello",
-        "last_name": "World"
+        "first_name": current_user.first_name,
+        "email_address": current_user.email_address,
+        "last_name": current_user.last_name,
     })
 
 
