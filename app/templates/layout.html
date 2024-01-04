@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ page_title | default("Flash Oauth Server") }}</title>
+    <meta name="description" content="{{ meta_description | default('Flash Oauth Server') }}" />
+    <meta name="keywords" content="{{ meta_keywords | default('Flash Oauth Server') }}" />
+  </head>
+  <body>
+    {% block content %} {% endblock %}
+  </body>
+</html>

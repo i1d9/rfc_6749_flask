@@ -378,11 +378,8 @@ def login_request():
     if login_form.validate_on_submit():
         user = User.query.filter_by(
             email_address=login_form.email_address.data).first()
-        print(user)
 
         if user and user.verify_password(login_form.password.data):
-
-            print(user.id)
             login_user(user)
             flash('Logged in successfully.')
             return redirect(url_for('profile'))

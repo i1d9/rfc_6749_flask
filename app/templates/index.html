@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block content %}
+
+
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('profile') }}" class="navbar-item">
+        Profile
+    </a>
+    {% endif %}
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('login_request') }}" class="navbar-item">
+        Login
+    </a>
+    <a href="{{ url_for('register') }}" class="navbar-item">
+        Sign Up
+    </a>
+    {% endif %}
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('logout') }}" class="navbar-item">
+        Logout
+    </a>
+    {% endif %}
+
+{% endblock %}
