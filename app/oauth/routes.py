@@ -1,9 +1,15 @@
 from app.oauth import oauth_bp
-from flask import jsonify, request, redirect
+from flask import jsonify, request, redirect, render_template
 from app.models.oauth_client import OauthClient
-from app.extensions from db
+from app.extensions import db
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
+from app.extensions import csrf, current_user, login_required
+from app.models.oauth_code import OauthCode
+import hashlib
+import secrets
+import base64
+import jwt
 
 @oauth_bp.route("/authorization", methods=["GET", "POST"])
 @login_required
