@@ -8,6 +8,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from urllib.parse import urlencode
 
 from datetime import datetime, timedelta
+from functools import wraps
+
 import os
 import secrets
 import bcrypt
@@ -142,6 +144,37 @@ with app.app_context():
         db.session.commit()
 
 
+def verify_access_token(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if "Authorization" in request.headers:
+            token = request.headers["Authorization"].split(" ")[1]
+         
+        if not token:
+            return {
+                "error_description": "Access denied",
+                "error": "Unauthorized"
+
+            }, 401
+        try:
+            data = jwt.decode(token, 'secret', algorithms=['HS512'])
+            current_user = User.query.get(data["user_id"])
+            if current_user is None:
+                return {
+                    "error_description": "Invalid Access Token",
+                    "error": "Unauthorized"
+
+                }, 401
+        except Exception as e:
+            return {
+                "error_description": str(e),
+                "error": "internal server error"
+            }, 500
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -150,6 +183,15 @@ def index():
 @app.route("/<name>")
 def hello(name):
     return f"Hello, {escape(name)}!"
+
+
+@app.route("/user/info")
+@verify_access_token
+def user_info():
+    return jsonify({
+        "first_name": "Hello",
+        "last_name": "World"
+    })
 
 
 @app.route("/profile", methods=["GET", "POST"])
@@ -231,13 +273,12 @@ def authorization():
 @csrf.exempt
 def access_token_endpoint():
     args = request.json
-    
+
     grant_type = args.get('grant_type')
     code = args.get('code')
     redirect_uri = args.get('redirect_uri')
     client_id = args.get('client_id')
     code_verifier = args.get('code_verifier')
-
 
     if None not in [client_id, redirect_uri, grant_type, code, code_verifier]:
         # Try resolving the client from the database
@@ -249,7 +290,7 @@ def access_token_endpoint():
         if client:
             match grant_type:
                 case "authorization_code":
-                    if None not in  [code_verifier, code]:
+                    if None not in [code_verifier, code]:
 
                         oauth_code = OauthCode.query.filter_by(
                             code=code,
@@ -276,7 +317,7 @@ def access_token_endpoint():
                                 "expires_in": 3600,
                             }
                         else:
-                            
+
                             data = {"error": "invalid_request",
                                     "error_description": "invalid parameters provided",
                                     }
